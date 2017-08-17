@@ -7,16 +7,13 @@ resolvers += Resolver.url(
 val FortifyConfig = config("fortify").extend(Compile).hide
 inConfig(FortifyConfig)(Defaults.compileSettings)
 
-val fortifyJar = taskKey[File]("JAR containing scala-fortify compiler plugin")
-fortifyJar := new java.io.File(
-  "/Users/tisue/.ivy2/cache/" +
-    "com.lightbend/scala-fortify_2.12/jars/scala-fortify_2.12-e940f40a-assembly.jar")
-
 sources in FortifyConfig := (sources in Compile).value
 
 scalacOptions in FortifyConfig += s"-Xplugin-require:fortify"
 scalacOptions in FortifyConfig += s"-P:fortify:out=${target.value}"
 scalacOptions in FortifyConfig += "-Ystop-before:jvm"
+scalacOptions in Compile ~=
+  (_.filterNot(opt => opt.startsWith("-Xplugin:") && opt.contains("scala-fortify")))
 
 val translateCommand = Command.command("translate") { (state: State) =>
   Project.runTask(clean in Compile, state)
@@ -41,29 +38,8 @@ commands ++= Seq(translateCommand, scanCommand)
 
 //ivyConfigurations += FortifyConfig
 
-/*
-fortifyJar := {
-  val deps =
-    (libraryDependencies in FortifyConfig).value
-      .filter(_.configurations.fold(false)(_.startsWith("plugin->")))
-  update.value.configuration("plugin").map(_.modules).getOrElse(Nil).filter { m =>
-    deps.foreach(println)
-    deps.exists { d =>
-      d.organization == m.module.organization &&
-        d.name         == m.module.name &&    // if we use %% below then one has _2.12 and one doesn't?!
-        d.revision     == m.module.revision
-    }
-  }.flatMap(_.artifacts.map(_._2)).head
-}
- */
-
-// autoCompilerPlugins := false
-// autoCompilerPlugins in FortifyConfig := true
-
 addCompilerPlugin(
   "com.lightbend" %% "scala-fortify" % "e940f40a"
     classifier "assembly"
     exclude("com.typesafe.conductr", "ent-suite-licenses-parser")
     exclude("default", "scala-st-nodes"))
-scalacOptions in Compile ~=
-  (_.filterNot(opt => opt.startsWith("-Xplugin:") && opt.contains("scala-fortify")))
