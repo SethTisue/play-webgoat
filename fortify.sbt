@@ -7,13 +7,26 @@ resolvers += Resolver.url(
 val FortifyConfig = config("fortify").extend(Compile).hide
 inConfig(FortifyConfig)(Defaults.compileSettings)
 
+val fortifyJar = taskKey[File]("JAR containing scala-fortify compiler plugin")
+fortifyJar := {
+  val deps =
+    libraryDependencies.value
+      .filter(_.configurations.fold(false)(_.startsWith(FortifyConfig.name)))
+  update.value.configuration(FortifyConfig.name).map(_.modules).getOrElse(Nil).filter { m =>
+    deps.exists { d =>
+      d.organization == m.module.organization &&
+        s"${d.name}_${scalaBinaryVersion.value}" == m.module.name &&
+        d.revision == m.module.revision
+    }
+  }.flatMap(_.artifacts.map(_._2)).head
+}
+
 sources in FortifyConfig := (sources in Compile).value
 
+scalacOptions in FortifyConfig += s"-Xplugin:${fortifyJar.value}"
 scalacOptions in FortifyConfig += s"-Xplugin-require:fortify"
 scalacOptions in FortifyConfig += s"-P:fortify:out=${target.value}"
 scalacOptions in FortifyConfig += "-Ystop-before:jvm"
-scalacOptions in Compile ~=
-  (_.filterNot(opt => opt.startsWith("-Xplugin:") && opt.contains("scala-fortify")))
 
 val translateCommand = Command.command("translate") { (state: State) =>
   Project.runTask(clean in Compile, state)
@@ -36,10 +49,10 @@ val scanCommand = Command.command("scan") { (state: State) =>
 
 commands ++= Seq(translateCommand, scanCommand)
 
-//ivyConfigurations += FortifyConfig
+ivyConfigurations += FortifyConfig
 
-addCompilerPlugin(
-  "com.lightbend" %% "scala-fortify" % "e940f40a"
+libraryDependencies +=
+  ("com.lightbend" %% "scala-fortify" % "e940f40a" % FortifyConfig
     classifier "assembly"
     exclude("com.typesafe.conductr", "ent-suite-licenses-parser")
     exclude("default", "scala-st-nodes"))
