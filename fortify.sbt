@@ -14,7 +14,6 @@ fortifyJar := new java.io.File(
 
 sources in FortifyConfig := (sources in Compile).value
 
-scalacOptions in FortifyConfig += s"-Xplugin:${fortifyJar.value}"
 scalacOptions in FortifyConfig += s"-Xplugin-require:fortify"
 scalacOptions in FortifyConfig += s"-P:fortify:out=${target.value}"
 scalacOptions in FortifyConfig += "-Ystop-before:jvm"
@@ -60,8 +59,11 @@ fortifyJar := {
 
 // autoCompilerPlugins := false
 // autoCompilerPlugins in FortifyConfig := true
-// libraryDependencies +=
-//   (compilerPlugin("com.lightbend" % "scala-fortify_2.12" % "e940f40a" % FortifyConfig)
-//     classifier "assembly"
-//     exclude("com.typesafe.conductr", "ent-suite-licenses-parser")
-//     exclude("default", "scala-st-nodes"))
+
+addCompilerPlugin(
+  "com.lightbend" %% "scala-fortify" % "e940f40a"
+    classifier "assembly"
+    exclude("com.typesafe.conductr", "ent-suite-licenses-parser")
+    exclude("default", "scala-st-nodes"))
+scalacOptions in Compile ~=
+  (_.filterNot(opt => opt.startsWith("-Xplugin:") && opt.contains("scala-fortify")))
