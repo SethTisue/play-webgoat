@@ -1,1 +1,1 @@
-addSbtPlugin("com.lightbend" %% "sbt-fortify" % "29caffb7")
+addSbtPlugin("com.lightbend" %% "sbt-fortify" % "06e54d85+20170816-1746")
