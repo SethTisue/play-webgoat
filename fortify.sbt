@@ -5,15 +5,12 @@ resolvers += Resolver.url(
   new URL("http://repo.lightbend.com/commercial-releases/"))(
   Resolver.ivyStylePatterns)
 
-// enable the plugin
-autoCompilerPlugins := true
-addCompilerPlugin(
-  "com.lightbend" %% "scala-fortify" % "08abd94d" classifier "assembly"
-    exclude("com.typesafe.conductr", "ent-suite-licenses-parser")
-    exclude("default", "scala-st-nodes"))
+// enable & configure the plugin
+libraryDependencies += compilerPlugin(
+  "com.lightbend" %% "scala-fortify" % "fd6aecb7" classifier "assembly")
+scalacOptions += s"-P:fortify:build=play-webgoat"
 
 // configure the plugin
-scalacOptions += s"-P:fortify:out=${target.value}"
 
 // `translate` task
 val translate: TaskKey[Unit] = taskKey("Fortify Translation")
