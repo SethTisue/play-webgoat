@@ -7,7 +7,8 @@ resolvers += Resolver.url(
 
 // enable & configure the plugin
 libraryDependencies += compilerPlugin(
-  "com.lightbend" %% "scala-fortify" % "fd6aecb7" classifier "assembly")
+  "com.lightbend" %% "scala-fortify" % "91bc9551"
+    classifier "assembly" cross CrossVersion.patch)
 scalacOptions += s"-P:fortify:build=play-webgoat"
 
 // configure the plugin
@@ -24,5 +25,5 @@ val fpr = "scan.fpr"
 val scan: TaskKey[Unit] = taskKey("Fortify Scan")
 scan := {
   Seq("bash","-c", s"rm -rf ${fpr}").!
-  Seq("bash","-c", s"sourceanalyzer -filter filter.txt -f ${fpr} -scan target/*.nst").!
+  Seq("bash","-c", s"sourceanalyzer -b play-webgoat -f ${fpr} -scan").!
 }
