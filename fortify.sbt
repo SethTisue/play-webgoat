@@ -7,7 +7,7 @@ resolvers += Resolver.url(
 
 // enable & configure the plugin
 libraryDependencies += compilerPlugin(
-  "com.lightbend" %% "scala-fortify" % "0.1.0"
+  "com.lightbend" %% "scala-fortify" % "0.1.3"
     classifier "assembly" cross CrossVersion.patch)
 scalacOptions += s"-P:fortify:build=play-webgoat"
 
