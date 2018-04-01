@@ -11,3 +11,4 @@ addCompilerPlugin(
 
 // configure the plugin
 scalacOptions += "-P:fortify:build=play-webgoat"
+scalacOptions += "-P:fortify:scaversion=18.1"
